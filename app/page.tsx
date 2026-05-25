@@ -183,7 +183,13 @@ const TECH_COLORS = {
   "Data": { bg: "#FAECE7", text: "#712B13" },
 };
 
-function Avatar({ name, size = 40, fontSize = 14 }) {
+type AvatarProps = {
+  name: string;
+  size?: number;
+  fontSize?: number;
+};
+
+function Avatar({ name, size = 40, fontSize = 14 }: AvatarProps) {
   const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
   const colors = [
     { bg: "#EEEDFE", text: "#534AB7" },
