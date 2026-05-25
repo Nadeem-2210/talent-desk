@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, Briefcase, Star, ArrowRight } from "lucide-react";
+import { MapPin, Briefcase, ChevronRight, Star } from "lucide-react";
 
 type Candidate = {
   id: string;
@@ -20,156 +20,230 @@ type CandidateCardProps = {
   onSelect: (c: Candidate) => void;
 };
 
-const STATUS_THEME: Record<string, { text: string; bg: string; dot: string }> = {
-  "Shortlisted": { text: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20", dot: "bg-emerald-500" },
-  "Under Review": { text: "text-amber-700 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/20", dot: "bg-amber-500" },
-  "New": { text: "text-indigo-700 dark:text-indigo-400", bg: "bg-indigo-50 dark:bg-indigo-500/10 border-indigo-100 dark:border-indigo-500/20", dot: "bg-indigo-500" },
-  "Rejected": { text: "text-rose-700 dark:text-rose-400", bg: "bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20", dot: "bg-rose-500" },
+const font = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+
+const AVATAR_COLORS = [
+  { bg: "#6366f1", light: "#eef2ff" },
+  { bg: "#10b981", light: "#f0fdf4" },
+  { bg: "#f59e0b", light: "#fffbeb" },
+  { bg: "#8b5cf6", light: "#f5f3ff" },
+  { bg: "#ec4899", light: "#fdf2f8" },
+];
+
+const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string }> = {
+  Shortlisted: { label: "Shortlisted", color: "#065f46", bg: "#d1fae5", dot: "#10b981" },
+  "Under Review": { label: "Under Review", color: "#92400e", bg: "#fef3c7", dot: "#f59e0b" },
+  New: { label: "New", color: "#4c1d95", bg: "#ede9fe", dot: "#8b5cf6" },
+  Rejected: { label: "Rejected", color: "#71717a", bg: "#f4f4f5", dot: "#a1a1aa" },
 };
 
 export default function CandidateCard({ candidate, onSelect }: CandidateCardProps) {
-  const statusInfo = STATUS_THEME[candidate.status] || STATUS_THEME["New"];
-  
-  // Score indicator configurations
-  const scoreColorClass =
+  const initials = candidate.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  const avatarColor = AVATAR_COLORS[candidate.name.charCodeAt(0) % AVATAR_COLORS.length];
+  const status = STATUS_CONFIG[candidate.status] || STATUS_CONFIG["New"];
+
+  const scoreColor =
     candidate.overallScore >= 85
-      ? "stroke-emerald-500"
+      ? { text: "#065f46", bg: "#d1fae5", border: "#a7f3d0" }
       : candidate.overallScore >= 70
-      ? "stroke-amber-500"
-      : "stroke-rose-500";
-
-  const radius = 22;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (candidate.overallScore / 100) * circumference;
-
-  // Programmatic Avatar Color
-  const initials = candidate.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-  const colors = [
-    { bg: "bg-indigo-500/10 dark:bg-indigo-500/15", text: "text-indigo-600 dark:text-indigo-400", border: "border-indigo-500/20" },
-    { bg: "bg-emerald-500/10 dark:bg-emerald-500/15", text: "text-emerald-600 dark:text-emerald-400", border: "border-emerald-500/20" },
-    { bg: "bg-cyan-500/10 dark:bg-cyan-500/15", text: "text-cyan-600 dark:text-cyan-400", border: "border-cyan-500/20" },
-    { bg: "bg-amber-500/10 dark:bg-amber-500/15", text: "text-amber-600 dark:text-amber-400", border: "border-amber-500/20" },
-    { bg: "bg-rose-500/10 dark:bg-rose-500/15", text: "text-rose-600 dark:text-rose-400", border: "border-rose-500/20" },
-  ];
-  const avatarTheme = colors[candidate.name.charCodeAt(0) % colors.length];
+      ? { text: "#92400e", bg: "#fef3c7", border: "#fcd34d" }
+      : { text: "#71717a", bg: "#f4f4f5", border: "#e4e4e7" };
 
   return (
     <div
       onClick={() => onSelect(candidate)}
-      className="group relative bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-5 card-shadow card-shadow-hover transition-all duration-300 hover:-translate-y-0.5 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-5 animate-fade-in"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "20px",
+        padding: "20px 24px",
+        background: "#fff",
+        border: "1px solid #f4f4f5",
+        borderRadius: "14px",
+        cursor: "pointer",
+        fontFamily: font,
+        WebkitFontSmoothing: "antialiased",
+        transition: "border-color 0.15s, box-shadow 0.15s, transform 0.15s",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.borderColor = "#c7d2fe";
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 20px rgba(99,102,241,0.1)";
+        (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.borderColor = "#f4f4f5";
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.04)";
+        (e.currentTarget as HTMLElement).style.transform = "none";
+      }}
     >
-      <div className="flex items-start md:items-center gap-4 min-w-0 flex-1">
-        {/* Initials Avatar */}
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 border ${avatarTheme.bg} ${avatarTheme.text} ${avatarTheme.border}`}>
-          {initials}
+      {/* Avatar */}
+      <div
+        style={{
+          width: "44px",
+          height: "44px",
+          borderRadius: "12px",
+          background: avatarColor.bg,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#fff",
+          fontSize: "15px",
+          fontWeight: 700,
+          flexShrink: 0,
+          letterSpacing: "0.5px",
+        }}
+      >
+        {initials}
+      </div>
+
+      {/* Main info */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "5px", flexWrap: "wrap" }}>
+          <span
+            style={{
+              fontSize: "15px",
+              fontWeight: 700,
+              color: "#09090b",
+              letterSpacing: "-0.2px",
+            }}
+          >
+            {candidate.name}
+          </span>
+
+          {/* Status badge */}
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "5px",
+              padding: "3px 9px",
+              borderRadius: "99px",
+              background: status.bg,
+              fontSize: "11px",
+              fontWeight: 600,
+              color: status.color,
+            }}
+          >
+            <span
+              style={{
+                width: "5px",
+                height: "5px",
+                borderRadius: "50%",
+                background: status.dot,
+                display: "inline-block",
+              }}
+            />
+            {status.label}
+          </span>
         </div>
 
-        {/* Profile Details */}
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2 mb-1">
-            <span className="font-semibold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors text-base">
-              {candidate.name}
-            </span>
-            <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${statusInfo.bg} ${statusInfo.text}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${statusInfo.dot}`} />
-              {candidate.status}
-            </span>
-          </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "16px",
+            fontSize: "13px",
+            color: "#71717a",
+            marginBottom: "10px",
+            flexWrap: "wrap",
+          }}
+        >
+          <span style={{ fontWeight: 600, color: "#3f3f46" }}>{candidate.role}</span>
+          <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <Briefcase style={{ width: "12px", height: "12px", color: "#a1a1aa" }} />
+            {candidate.experience}
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <MapPin style={{ width: "12px", height: "12px", color: "#a1a1aa" }} />
+            {candidate.location}
+          </span>
+        </div>
 
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1.5 flex-wrap mb-3.5">
-            <span className="text-slate-800 dark:text-slate-200">{candidate.role}</span>
-            <span className="text-slate-300 dark:text-slate-700">•</span>
-            <span className="flex items-center gap-1">
-              <Briefcase className="w-3.5 h-3.5" />
-              {candidate.experience}
+        {/* Skill tags */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+          {candidate.techStack.map((t) => (
+            <span
+              key={t}
+              style={{
+                padding: "3px 10px",
+                background: "#eef2ff",
+                color: "#4338ca",
+                fontSize: "11px",
+                fontWeight: 600,
+                borderRadius: "6px",
+              }}
+            >
+              {t}
             </span>
-            <span className="text-slate-300 dark:text-slate-700">•</span>
-            <span className="flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-slate-400" />
-              {candidate.location}
+          ))}
+          {candidate.skills.slice(0, 3).map((s) => (
+            <span
+              key={s}
+              style={{
+                padding: "3px 10px",
+                background: "#fafafa",
+                color: "#52525b",
+                fontSize: "11px",
+                fontWeight: 500,
+                borderRadius: "6px",
+                border: "1px solid #e4e4e7",
+              }}
+            >
+              {s}
             </span>
-          </p>
-
-          {/* Technical Skills Row */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            {candidate.techStack.map((tech) => (
-              <span
-                key={tech}
-                className="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-950/60"
-              >
-                {tech}
-              </span>
-            ))}
-            {candidate.skills.slice(0, 3).map((skill) => (
-              <span
-                key={skill}
-                className="px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/40 dark:border-slate-800"
-              >
-                {skill}
-              </span>
-            ))}
-            {candidate.skills.length > 3 && (
-              <span className="text-xs text-slate-400 dark:text-slate-500 font-medium pl-1">
-                +{candidate.skills.length - 3} more
-              </span>
-            )}
-          </div>
+          ))}
+          {candidate.skills.length > 3 && (
+            <span style={{ fontSize: "11px", color: "#a1a1aa", alignSelf: "center" }}>
+              +{candidate.skills.length - 3} more
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Ratings & Score Rings */}
-      <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 border-slate-100 dark:border-slate-800 pt-3 md:pt-0 shrink-0">
-        <div className="flex flex-col items-start md:items-end gap-1.5">
-          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-            Assessment Score
-          </span>
-          <div className="flex gap-0.5">
-            {[1, 2, 3, 4, 5].map((star) => (
+      {/* Right — Score & Rating */}
+      <div style={{ display: "flex", alignItems: "center", gap: "24px", flexShrink: 0 }}>
+        {/* Stars */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+          <div style={{ display: "flex", gap: "2px" }}>
+            {[1, 2, 3, 4, 5].map((s) => (
               <Star
-                key={star}
-                className={`w-3.5 h-3.5 ${
-                  star <= candidate.rating
-                    ? "text-amber-500 fill-amber-500"
-                    : "text-slate-200 dark:text-slate-800"
-                }`}
+                key={s}
+                style={{
+                  width: "13px",
+                  height: "13px",
+                  color: s <= candidate.rating ? "#f59e0b" : "#e4e4e7",
+                  fill: s <= candidate.rating ? "#f59e0b" : "#e4e4e7",
+                }}
               />
             ))}
           </div>
+          <span style={{ fontSize: "10px", color: "#a1a1aa", fontWeight: 500 }}>Rating</span>
         </div>
 
-        {/* Circular SVG Rating */}
-        <div className="relative w-12 h-12 shrink-0">
-          <svg className="w-full h-full -rotate-90">
-            {/* Background Trail Circle */}
-            <circle
-              cx="24"
-              cy="24"
-              r={radius}
-              className="stroke-slate-100 dark:stroke-slate-800 fill-none"
-              strokeWidth="3.5"
-            />
-            {/* Value Progress Circle */}
-            <circle
-              cx="24"
-              cy="24"
-              r={radius}
-              className={`fill-none transition-all duration-500 ${scoreColorClass}`}
-              strokeWidth="3.5"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              strokeLinecap="round"
-            />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center font-bold text-[13px] text-slate-800 dark:text-white leading-none">
+        {/* Score */}
+        <div
+          style={{
+            width: "52px",
+            height: "52px",
+            borderRadius: "12px",
+            border: `1.5px solid ${scoreColor.border}`,
+            background: scoreColor.bg,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <span style={{ fontSize: "20px", fontWeight: 800, color: scoreColor.text, lineHeight: 1, letterSpacing: "-0.5px" }}>
             {candidate.overallScore}
-            <span className="text-[8px] text-slate-400 dark:text-slate-500 font-medium">/100</span>
-          </div>
+          </span>
+          <span style={{ fontSize: "8px", fontWeight: 700, color: scoreColor.text, opacity: 0.6, letterSpacing: "0.5px", textTransform: "uppercase" }}>
+            Score
+          </span>
         </div>
 
-        {/* Hover Arrow (Desktop) */}
-        <div className="hidden md:flex w-8 h-8 rounded-full border border-slate-200/60 dark:border-slate-800 items-center justify-center text-slate-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 group-hover:border-indigo-500/20 group-hover:bg-indigo-500/5 transition-all duration-300">
-          <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-        </div>
+        <ChevronRight style={{ width: "18px", height: "18px", color: "#d4d4d8" }} />
       </div>
     </div>
   );

@@ -1,79 +1,232 @@
 "use client";
 
-import { LayoutDashboard, Eye, LogOut, ShieldAlert, Award } from "lucide-react";
+import { LayoutDashboard, LogOut, Zap } from "lucide-react";
 
 type SidebarProps = {
   activeView: string;
   onViewChange: (view: string) => void;
   onLogout: () => void;
-  adminName?: string;
 };
 
-export default function Sidebar({ activeView, onViewChange, onLogout, adminName = "Admin User" }: SidebarProps) {
-  const tabs = [
-    { id: "admin", label: "Admin Dashboard", icon: LayoutDashboard },
-    { id: "customer", label: "Customer View", icon: Eye },
+const font = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+
+export default function Sidebar({ activeView, onViewChange, onLogout }: SidebarProps) {
+  const navItems = [
+    { id: "admin", label: "Dashboard", icon: LayoutDashboard },
   ];
 
+  const isActive = (id: string) =>
+    activeView === id || (activeView === "profile" && id === "admin");
+
   return (
-    <aside className="w-64 bg-white border-r border-slate-200/80 text-slate-600 flex flex-col shrink-0 h-screen sticky top-0 z-20 shadow-[1px_0_10px_rgba(0,0,0,0.01)] animate-fade-in">
-      {/* Brand Header */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-100 gap-3">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-cyan-600 flex items-center justify-center text-white font-bold shadow-sm shadow-indigo-600/10">
-          <Award className="w-4.5 h-4.5" />
-        </div>
-        <div>
-          <span className="font-extrabold text-slate-800 text-base tracking-tight">Talent<span className="bg-gradient-to-r from-indigo-600 to-cyan-600 bg-clip-text text-transparent">Desk</span></span>
-          <p className="text-[10px] text-slate-400 font-bold tracking-wider uppercase leading-none mt-0.5">Recruiter Hub</p>
+    <aside
+      style={{
+        width: "240px",
+        background: "#09090b",
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        flexShrink: 0,
+        fontFamily: font,
+        WebkitFontSmoothing: "antialiased",
+        zIndex: 20,
+      }}
+    >
+      {/* Logo */}
+      <div
+        style={{
+          padding: "28px 24px 24px",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div
+            style={{
+              width: "32px",
+              height: "32px",
+              borderRadius: "9px",
+              background: "linear-gradient(135deg, #6366f1, #7c3aed)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 2px 12px rgba(99,102,241,0.45)",
+              flexShrink: 0,
+            }}
+          >
+            <Zap style={{ width: "15px", height: "15px", color: "#fff" }} strokeWidth={2.5} />
+          </div>
+          <span
+            style={{
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: "16px",
+              letterSpacing: "-0.3px",
+            }}
+          >
+            TalentDesk
+          </span>
         </div>
       </div>
 
-      {/* Navigation Links */}
-      <nav className="flex-1 py-6 px-3 space-y-1">
-        <div className="px-3 mb-2 text-[10px] font-bold text-slate-400 tracking-wider uppercase">
-          Navigation
+      {/* Nav */}
+      <nav style={{ flex: 1, padding: "16px 12px" }}>
+        <p
+          style={{
+            fontSize: "10px",
+            fontWeight: 600,
+            color: "#52525b",
+            letterSpacing: "1.2px",
+            textTransform: "uppercase",
+            padding: "0 8px",
+            marginBottom: "8px",
+          }}
+        >
+          Menu
+        </p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const active = isActive(item.id);
+            return (
+              <button
+                key={item.id}
+                onClick={() => onViewChange(item.id)}
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  padding: "10px 12px",
+                  borderRadius: "8px",
+                  border: "none",
+                  cursor: "pointer",
+                  fontFamily: font,
+                  fontSize: "14px",
+                  fontWeight: active ? 600 : 500,
+                  letterSpacing: "-0.1px",
+                  background: active ? "rgba(99,102,241,0.15)" : "transparent",
+                  color: active ? "#a5b4fc" : "#71717a",
+                  transition: "all 0.15s ease",
+                  textAlign: "left",
+                }}
+                onMouseEnter={(e) => {
+                  if (!active) {
+                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
+                    (e.currentTarget as HTMLElement).style.color = "#d4d4d8";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) {
+                    (e.currentTarget as HTMLElement).style.background = "transparent";
+                    (e.currentTarget as HTMLElement).style.color = "#71717a";
+                  }
+                }}
+              >
+                <Icon
+                  style={{
+                    width: "16px",
+                    height: "16px",
+                    color: active ? "#818cf8" : "#52525b",
+                    flexShrink: 0,
+                  }}
+                />
+                {item.label}
+                {active && (
+                  <div
+                    style={{
+                      marginLeft: "auto",
+                      width: "6px",
+                      height: "6px",
+                      borderRadius: "50%",
+                      background: "#818cf8",
+                    }}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeView === tab.id || (tab.id === "admin" && activeView === "profile");
-          return (
-            <button
-              key={tab.id}
-              onClick={() => onViewChange(tab.id)}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
-                isActive
-                  ? "bg-indigo-50 text-indigo-600 border border-indigo-100/50 shadow-sm shadow-indigo-500/5"
-                  : "hover:bg-slate-50 hover:text-slate-800 text-slate-400 border border-transparent"
-              }`}
-            >
-              <Icon className="w-4.5 h-4.5 shrink-0" />
-              {tab.label}
-            </button>
-          );
-        })}
+
       </nav>
 
-      {/* User Section / Logout */}
-      <div className="p-4 border-t border-slate-100 bg-slate-50/40">
-        <div className="flex items-center gap-3 mb-3 px-2">
-          <div className="w-9 h-9 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm">
-            {adminName.split(" ").map(n => n[0]).join("").toUpperCase()}
+      {/* User block */}
+      <div
+        style={{
+          padding: "16px 12px 20px",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        {/* User info */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            padding: "10px 12px",
+            borderRadius: "8px",
+            marginBottom: "4px",
+          }}
+        >
+          <div
+            style={{
+              width: "32px",
+              height: "32px",
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, #6366f1, #7c3aed)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#fff",
+              fontSize: "12px",
+              fontWeight: 700,
+              flexShrink: 0,
+            }}
+          >
+            AU
           </div>
-          <div className="min-w-0">
-            <p className="text-xs font-bold text-slate-800 truncate leading-tight">{adminName}</p>
-            <p className="text-[10px] text-slate-400 font-bold leading-tight mt-0.5 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-              Active Admin
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <p style={{ fontSize: "13px", fontWeight: 600, color: "#e4e4e7", marginBottom: "1px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              Admin User
+            </p>
+            <p style={{ fontSize: "11px", color: "#52525b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              admin@talentdesk.com
             </p>
           </div>
         </div>
-        
+
         <button
           onClick={onLogout}
-          className="w-full flex items-center justify-center gap-2 py-2 px-3.5 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 border border-rose-100 hover:bg-rose-100/60 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] shadow-sm shadow-rose-500/5"
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            padding: "9px 12px",
+            borderRadius: "8px",
+            border: "1px solid rgba(255,255,255,0.08)",
+            background: "transparent",
+            color: "#71717a",
+            fontSize: "13px",
+            fontWeight: 500,
+            cursor: "pointer",
+            fontFamily: font,
+            transition: "all 0.15s ease",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.08)";
+            (e.currentTarget as HTMLElement).style.color = "#f87171";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(239,68,68,0.2)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "transparent";
+            (e.currentTarget as HTMLElement).style.color = "#71717a";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
+          }}
         >
-          <LogOut className="w-3.5 h-3.5" />
-          Log Out Session
+          <LogOut style={{ width: "13px", height: "13px" }} />
+          Sign out
         </button>
       </div>
     </aside>

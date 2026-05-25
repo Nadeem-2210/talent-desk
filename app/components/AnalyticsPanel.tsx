@@ -1,146 +1,191 @@
 "use client";
 
-import { Users, Star, Clock, AlertCircle, TrendingUp } from "lucide-react";
+import { Users, Star, Clock, Sparkles } from "lucide-react";
 
 type AnalyticsPanelProps = {
-  candidates: Array<{
-    status: string;
-  }>;
+  candidates: Array<{ status: string }>;
 };
 
-export default function AnalyticsPanel({ candidates }: AnalyticsPanelProps) {
-  const counts = {
-    total: candidates.length,
-    shortlisted: candidates.filter((c) => c.status === "Shortlisted").length,
-    review: candidates.filter((c) => c.status === "Under Review").length,
-    new: candidates.filter((c) => c.status === "New").length,
-    rejected: candidates.filter((c) => c.status === "Rejected").length,
-  };
+const font = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 
-  // Percentages for the pipeline bar
-  const pctShortlisted = counts.total ? Math.round((counts.shortlisted / counts.total) * 100) : 0;
-  const pctReview = counts.total ? Math.round((counts.review / counts.total) * 100) : 0;
-  const pctNew = counts.total ? Math.round((counts.new / counts.total) * 100) : 0;
-  const pctRejected = counts.total ? Math.round((counts.rejected / counts.total) * 100) : 0;
+export default function AnalyticsPanel({ candidates }: AnalyticsPanelProps) {
+  const total = candidates.length;
+  const shortlisted = candidates.filter((c) => c.status === "Shortlisted").length;
+  const review = candidates.filter((c) => c.status === "Under Review").length;
+  const newCount = candidates.filter((c) => c.status === "New").length;
+
+  const pctShortlisted = total ? Math.round((shortlisted / total) * 100) : 0;
+  const pctReview = total ? Math.round((review / total) * 100) : 0;
+  const pctNew = total ? Math.round((newCount / total) * 100) : 0;
+  const pctRejected = 100 - pctShortlisted - pctReview - pctNew;
 
   const metrics = [
     {
-      label: "Total Candidates",
-      value: counts.total,
+      label: "Total Pipeline",
+      value: total,
       icon: Users,
-      color: "from-indigo-500/10 to-indigo-600/10 text-indigo-500 border-indigo-500/10",
-      trend: "Overall pipeline",
+      sub: "+2 this week",
+      accent: "#6366f1",
+      softBg: "#f5f3ff",
     },
     {
       label: "Shortlisted",
-      value: counts.shortlisted,
+      value: shortlisted,
       icon: Star,
-      color: "from-emerald-500/10 to-emerald-600/10 text-emerald-500 border-emerald-500/10",
-      trend: `${pctShortlisted}% of total`,
+      sub: `${pctShortlisted}% of total`,
+      accent: "#10b981",
+      softBg: "#f0fdf4",
     },
     {
       label: "Under Review",
-      value: counts.review,
+      value: review,
       icon: Clock,
-      color: "from-amber-500/10 to-amber-600/10 text-amber-500 border-amber-500/10",
-      trend: `${pctReview}% of total`,
+      sub: `${pctReview}% of total`,
+      accent: "#f59e0b",
+      softBg: "#fffbeb",
     },
     {
-      label: "New Applications",
-      value: counts.new,
-      icon: AlertCircle,
-      color: "from-cyan-500/10 to-cyan-600/10 text-cyan-500 border-cyan-500/10",
-      trend: "Requires screening",
+      label: "New Applicants",
+      value: newCount,
+      icon: Sparkles,
+      sub: "Needs screening",
+      accent: "#8b5cf6",
+      softBg: "#f5f3ff",
     },
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in">
-        {metrics.map((m, idx) => {
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px", fontFamily: font }}>
+      {/* Metric Cards */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gap: "16px",
+        }}
+      >
+        {metrics.map((m, i) => {
           const Icon = m.icon;
           return (
             <div
-              key={idx}
-              className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-5 card-shadow transition-all duration-300 hover:scale-[1.01]"
+              key={i}
+              style={{
+                background: "#fff",
+                border: "1px solid #f4f4f5",
+                borderRadius: "14px",
+                padding: "22px 24px",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                transition: "box-shadow 0.2s, transform 0.2s",
+                cursor: "default",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)";
+                (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)";
+                (e.currentTarget as HTMLElement).style.transform = "none";
+              }}
             >
-              <div className="flex justify-between items-start mb-3">
-                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 tracking-wide uppercase">
-                  {m.label}
-                </span>
-                <div className={`p-2.5 rounded-xl bg-gradient-to-tr ${m.color} border shrink-0`}>
-                  <Icon className="w-4.5 h-4.5" />
-                </div>
+              <div
+                style={{
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "10px",
+                  background: m.softBg,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: "16px",
+                }}
+              >
+                <Icon style={{ width: "18px", height: "18px", color: m.accent }} />
               </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold tracking-tight text-slate-800 dark:text-white">
-                  {m.value}
-                </span>
-                <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500 flex items-center gap-0.5">
-                  <TrendingUp className="w-3 h-3 text-indigo-400" />
-                  {m.trend}
-                </span>
+              <div
+                style={{
+                  fontSize: "32px",
+                  fontWeight: 800,
+                  color: "#09090b",
+                  letterSpacing: "-1px",
+                  lineHeight: 1,
+                  marginBottom: "6px",
+                }}
+              >
+                {m.value}
+              </div>
+              <div style={{ fontSize: "13px", color: "#71717a", fontWeight: 500 }}>{m.label}</div>
+              <div
+                style={{
+                  marginTop: "10px",
+                  fontSize: "11px",
+                  color: m.accent,
+                  fontWeight: 600,
+                  background: m.softBg,
+                  display: "inline-block",
+                  padding: "2px 8px",
+                  borderRadius: "99px",
+                }}
+              >
+                {m.sub}
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Recruitment Pipeline Visual Breakdown */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-5 card-shadow animate-fade-in delay-75">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+      {/* Pipeline Bar */}
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #f4f4f5",
+          borderRadius: "14px",
+          padding: "20px 24px",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
           <div>
-            <h3 className="text-sm font-bold text-slate-800 dark:text-white">Recruitment Pipeline Ratios</h3>
-            <p className="text-xs text-slate-400 dark:text-slate-500">Visual distribution of candidate application stages</p>
+            <p style={{ fontSize: "14px", fontWeight: 700, color: "#09090b", marginBottom: "2px" }}>
+              Pipeline Overview
+            </p>
+            <p style={{ fontSize: "12px", color: "#a1a1aa" }}>Stage distribution across all candidates</p>
           </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs font-medium">
-            <span className="flex items-center gap-1.5 text-emerald-500">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              Shortlisted ({counts.shortlisted})
-            </span>
-            <span className="flex items-center gap-1.5 text-amber-500">
-              <span className="w-2 h-2 rounded-full bg-amber-500" />
-              Under Review ({counts.review})
-            </span>
-            <span className="flex items-center gap-1.5 text-cyan-500">
-              <span className="w-2 h-2 rounded-full bg-cyan-500" />
-              New ({counts.new})
-            </span>
-            <span className="flex items-center gap-1.5 text-rose-500">
-              <span className="w-2 h-2 rounded-full bg-rose-500" />
-              Rejected ({counts.rejected})
-            </span>
+          <div style={{ display: "flex", gap: "20px" }}>
+            {[
+              { label: "Shortlisted", color: "#10b981" },
+              { label: "Review", color: "#f59e0b" },
+              { label: "New", color: "#8b5cf6" },
+              { label: "Rejected", color: "#e4e4e7" },
+            ].map((s) => (
+              <div key={s.label} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: s.color }} />
+                <span style={{ fontSize: "12px", color: "#71717a", fontWeight: 500 }}>{s.label}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Multi-segment Progress Bar */}
-        <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
-          {counts.total === 0 ? (
-            <div className="w-full h-full bg-slate-200 dark:bg-slate-700 animate-pulse" />
-          ) : (
+        {/* Progress bar */}
+        <div
+          style={{
+            width: "100%",
+            height: "8px",
+            background: "#f4f4f5",
+            borderRadius: "99px",
+            overflow: "hidden",
+            display: "flex",
+            gap: "2px",
+          }}
+        >
+          {total > 0 ? (
             <>
-              <div
-                style={{ width: `${pctShortlisted}%` }}
-                className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 transition-all duration-500"
-                title={`Shortlisted: ${pctShortlisted}%`}
-              />
-              <div
-                style={{ width: `${pctReview}%` }}
-                className="h-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-500"
-                title={`Under Review: ${pctReview}%`}
-              />
-              <div
-                style={{ width: `${pctNew}%` }}
-                className="h-full bg-gradient-to-r from-cyan-400 to-cyan-500 transition-all duration-500"
-                title={`New: ${pctNew}%`}
-              />
-              <div
-                style={{ width: `${pctRejected}%` }}
-                className="h-full bg-gradient-to-r from-rose-400 to-rose-500 transition-all duration-500"
-                title={`Rejected: ${pctRejected}%`}
-              />
+              <div style={{ width: `${pctShortlisted}%`, height: "100%", background: "#10b981", borderRadius: "99px", transition: "width 0.7s ease" }} />
+              <div style={{ width: `${pctReview}%`, height: "100%", background: "#f59e0b", borderRadius: "99px", transition: "width 0.7s ease" }} />
+              <div style={{ width: `${pctNew}%`, height: "100%", background: "#8b5cf6", borderRadius: "99px", transition: "width 0.7s ease" }} />
+              <div style={{ width: `${Math.max(pctRejected, 0)}%`, height: "100%", background: "#e4e4e7", borderRadius: "99px", transition: "width 0.7s ease" }} />
             </>
+          ) : (
+            <div style={{ width: "100%", height: "100%", background: "#f4f4f5" }} />
           )}
         </div>
       </div>
