@@ -61,7 +61,12 @@ const INITIAL_CANDIDATES = [
 ];
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("td_auth") === "true";
+    }
+    return false;
+  });
   const [candidates, setCandidates] = useState(INITIAL_CANDIDATES);
   const [view, setView] = useState("admin");
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
@@ -105,14 +110,14 @@ export default function App() {
   const isCustomerViewing = view === "customer" && selectedCandidate;
 
   if (!isAuthenticated && !isCustomerViewing) {
-    return <Login onLoginSuccess={() => setIsAuthenticated(true)} />;
+    return <Login onLoginSuccess={() => { setIsAuthenticated(true); localStorage.setItem("td_auth", "true"); }} />;
   }
 
   const font = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 
   return (
     <div style={{ height: "100vh", display: "flex", background: "#f8fafc", overflow: "hidden", fontFamily: font, WebkitFontSmoothing: "antialiased" }}>
-      
+
       {showShareModal && candidateToShare && (
         <ShareModal candidate={candidateToShare} onClose={() => { setShowShareModal(false); setCandidateToShare(null); }} />
       )}
@@ -121,7 +126,7 @@ export default function App() {
         <Sidebar
           activeView={view}
           onViewChange={(v) => { setView(v); setSelectedCandidate(null); }}
-          onLogout={() => { setIsAuthenticated(false); setView("admin"); setSelectedCandidate(null); }}
+          onLogout={() => { setIsAuthenticated(false); setView("admin"); setSelectedCandidate(null); localStorage.removeItem("td_auth"); }}
         />
       )}
 
@@ -320,7 +325,7 @@ export default function App() {
                 </div>
                 <CandidateDetails
                   candidate={selectedCandidate}
-                  onBack={() => {}}
+                  onBack={() => { }}
                   isSharedView={true}
                 />
               </div>
