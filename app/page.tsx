@@ -1,8 +1,16 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
+import { Search, Filter, SlidersHorizontal, LogIn, Award, Users, ShieldAlert, Sparkles, HelpCircle } from "lucide-react";
+import Login from "./components/Login";
+import Sidebar from "./components/Sidebar";
+import AnalyticsPanel from "./components/AnalyticsPanel";
+import CandidateCard from "./components/CandidateCard";
+import CandidateDetails from "./components/CandidateDetails";
+import ShareModal from "./components/ShareModal";
 
-const CANDIDATES = [
+// Initial Candidates Data
+const INITIAL_CANDIDATES = [
   {
     id: "c001",
     name: "Arjun Mehta",
@@ -20,20 +28,21 @@ const CANDIDATES = [
     rating: 4,
     summary: [
       {
-        q: "Tell us about your most challenging project.",
-        a: "I led the migration of a legacy AngularJS app to React with TypeScript at my current company — a 200k LOC codebase serving 50k daily users. The biggest challenge was maintaining zero downtime during the transition. I designed a micro-frontend architecture that let us migrate module by module over 8 months. We ended up improving page load time by 40% and reducing bug reports by 60%."
+        q: "Tell us about your challenging project.",
+        a: "I led the migration of a AngularJS app to React with TypeScript at my current company — a 200k LOC codebase serving 50k daily users. The biggest challenge was maintaining zero downtime. I designed a micro-frontend architecture migrating module by module over 8 months, improving page load by 40%."
       },
       {
         q: "How do you handle performance bottlenecks?",
-        a: "I start with profiling using Chrome DevTools and React Profiler before making any assumptions. In my last role I identified unnecessary re-renders causing a 300ms lag in our data table. I introduced React.memo and useMemo strategically, and moved expensive calculations to web workers. The result was sub-100ms interactions even with 10k rows."
+        a: "I start with profiling using Chrome DevTools. In my last role, I identified unnecessary re-renders in a grid. I introduced React.memo and useMemo, and moved heavy calculations to web workers, achieving sub-100ms interactions with 10k rows."
       },
       {
         q: "Where do you see yourself in 3 years?",
-        a: "I want to grow into a principal engineer role where I'm setting technical direction and mentoring a team. I'm particularly interested in design systems and developer experience — I believe the tools engineers use every day have a massive impact on what they can build."
+        a: "I want to grow into a principal engineer role setting tech direction and mentoring. I'm highly interested in design systems and developer experience — the tools engineers use have a massive impact."
       }
     ],
     strengths: ["System design", "Performance optimization", "Team leadership"],
     overallScore: 87,
+    notes: "Very strong candidate, demonstrated deep architectural expertise and excellent communication skills. Recommended for final review.",
   },
   {
     id: "c002",
@@ -52,20 +61,21 @@ const CANDIDATES = [
     rating: 5,
     summary: [
       {
-        q: "Tell us about your most challenging project.",
-        a: "I built a real-time notification system from scratch handling 2M events per day at my current company. The challenge was guaranteeing delivery while keeping latency under 50ms. I designed a pipeline using Kafka for event streaming, Redis for deduplication, and a custom retry mechanism for failed deliveries. We achieved 99.98% delivery rate."
+        q: "Tell us about your challenging project.",
+        a: "I built a real-time notification system from scratch handling 2M events per day. The challenge was guaranteeing delivery while keeping latency under 50ms. I designed a pipeline using Kafka, Redis deduplication, and a custom retry queue, achieving a 99.98% delivery rate."
       },
       {
         q: "How do you approach API design?",
-        a: "I follow RESTful principles but I'm pragmatic about it. I start with the consumer — what do they actually need? I write the API contract first as an OpenAPI spec and share it with frontend teams for feedback before writing a single line of implementation. This has saved us from costly refactors multiple times."
+        a: "I follow RESTful principles but remain pragmatic. I start with the consumer — what do they need? I write the API contract as an OpenAPI spec first and share it with frontend teams for feedback before writing code."
       },
       {
         q: "What's your approach to system reliability?",
-        a: "I believe reliability is designed in, not bolted on. Every service I build has circuit breakers, structured logging with trace IDs, and health endpoints from day one. I run chaos engineering experiments in staging to find failure modes before they find us in production."
+        a: "I believe reliability is designed in. Every service I build has circuit breakers, structured logging with trace IDs, and health endpoints from day one. I run chaos engineering experiments in staging."
       }
     ],
     strengths: ["Distributed systems", "API design", "Reliability engineering"],
     overallScore: 92,
+    notes: "Exceptional system design skills. Understood reliability concepts incredibly well. Top tier candidate.",
   },
   {
     id: "c003",
@@ -84,20 +94,21 @@ const CANDIDATES = [
     rating: 3,
     summary: [
       {
-        q: "Tell us about your most challenging project.",
-        a: "I built a cross-platform mobile app using React Native for a logistics startup. The hardest part was handling offline-first data sync — drivers in rural areas often lose connectivity mid-delivery. I implemented a local SQLite store with a custom sync queue that reconciles with the server when connectivity returns."
+        q: "Tell us about your challenging project.",
+        a: "I built a cross-platform mobile app using React Native. The hardest part was handling offline-first data sync for drivers in rural areas. I implemented a local SQLite store with a custom sync queue that reconciles with the server when connectivity returns."
       },
       {
         q: "How do you prioritize tasks when under pressure?",
-        a: "I use impact vs effort. I write down everything that needs doing, estimate effort, then rank by business impact. I communicate clearly with stakeholders about what I can realistically deliver and what's being deprioritized. Surprises are worse than disappointing news delivered early."
+        a: "I use impact vs effort. I rank tasks by business value and communicate clearly with stakeholders about what is realistic. Surprises are worse than disappointing news delivered early."
       },
       {
         q: "What excites you about this role?",
-        a: "The scale of the product and the team structure. I've been a solo developer for most of my career and I'm actively looking to be in a collaborative environment where I can learn from senior engineers. I'm excited about structured code reviews and architectural decision-making as a team."
+        a: "The scale of the product and collaborative structure. I've been a solo developer and look forward to being in an environment where I can learn from senior engineers and participate in code reviews."
       }
     ],
     strengths: ["Mobile development", "Rapid prototyping", "Self-starter"],
     overallScore: 74,
+    notes: "Solid mid-level developer. Quick learner, offline sync project was impressive. Needs some mentorship on enterprise architecture.",
   },
   {
     id: "c004",
@@ -116,20 +127,21 @@ const CANDIDATES = [
     rating: 3,
     summary: [
       {
-        q: "Tell us about your most challenging project.",
-        a: "I migrated a monolithic on-premise infrastructure to a multi-region AWS setup with zero downtime for a fintech company. The challenge was the 8-hour maintenance window restriction from the business side. I designed a blue-green deployment with DNS failover and did the cutover in 4.5 hours."
+        q: "Tell us about your challenging project.",
+        a: "I migrated a monolithic on-premise infrastructure to a multi-region AWS setup with zero downtime for a fintech company. The challenge was the 8-hour maintenance window restriction. I designed a blue-green deployment with DNS failover and did the cutover in 4.5 hours."
       },
       {
         q: "How do you manage infrastructure costs?",
-        a: "I treat cloud costs as a product metric. I set up cost dashboards with per-team attribution so engineers can see the cost impact of their services. I've reduced cloud spend by 35% in my current role through right-sizing, reserved instances, and spot instances for non-critical workloads."
+        a: "I treat cloud costs as a product metric. I set up cost dashboards with per-team attribution, and reduced cloud spend by 35% through right-sizing, reserved instances, and spot instances for non-critical workloads."
       },
       {
         q: "How do you handle on-call incidents?",
-        a: "Structured runbooks are everything. I believe on-call should never require heroics — if it does, that's a process failure. I write detailed runbooks for every alert, conduct blameless postmortems, and track MTTR as a team KPI."
+        a: "Structured runbooks are everything. I believe on-call should never require heroics — if it does, that's a process failure. I write detailed runbooks for every alert, conduct blameless postmortems, and track MTTR."
       }
     ],
     strengths: ["Cloud architecture", "Cost optimization", "Incident management"],
     overallScore: 69,
+    notes: "Candidate was technically skilled, but team felt communication style was too defensive. Decided not to move forward.",
   },
   {
     id: "c005",
@@ -148,633 +160,302 @@ const CANDIDATES = [
     rating: 5,
     summary: [
       {
-        q: "Tell us about your most challenging project.",
-        a: "I built a real-time fraud detection model that processes 500 transactions per second with sub-10ms latency. The challenge was class imbalance — fraud is 0.1% of transactions. I used a combination of isolation forests and a fine-tuned transformer on transaction sequences. The model reduced false positives by 45% compared to the rule-based system it replaced."
+        q: "Tell us about your challenging project.",
+        a: "I built a real-time fraud detection model that processes 500 transactions per second with sub-10ms latency. The challenge was class imbalance — fraud is 0.1% of transactions. I used isolation forests and a transformer on transaction sequences, reducing false positives by 45%."
       },
       {
         q: "How do you handle model drift in production?",
-        a: "I treat models like software — they need monitoring and versioning. I set up feature drift detection using PSI scores and performance monitoring on a holdout set. When drift is detected, I have automated pipelines that trigger retraining with recent data. Every model deployment is A/B tested against the previous version."
+        a: "I treat models like software. I set up feature drift detection using PSI scores and performance monitoring on a holdout set. When drift is detected, I have automated pipelines that trigger retraining with recent data."
       },
       {
         q: "How do you communicate ML results to non-technical stakeholders?",
-        a: "I lead with business impact, not metrics. Instead of saying 'the model has 94% precision', I say 'we'll flag 8 additional fraudulent transactions per day while sending 2 fewer false alarms to customers'. I use visual dashboards and avoid jargon in stakeholder presentations."
+        a: "I lead with business impact, not metrics. Instead of saying 'precision is 94%', I say 'we'll flag 8 additional fraud cases while sending 2 fewer false alarms to customers'. I use visual dashboards and avoid jargon."
       }
     ],
     strengths: ["ML infrastructure", "Model optimization", "Stakeholder communication"],
     overallScore: 91,
+    notes: "Superb ML candidate, excellent blend of deep engineering capability and high business acumen. Strong recommend.",
   },
 ];
 
-const STATUS_COLORS = {
-  "Shortlisted": { bg: "#E1F5EE", text: "#0F6E56", dot: "#1D9E75" },
-  "Under Review": { bg: "#FAEEDA", text: "#633806", dot: "#BA7517" },
-  "New": { bg: "#E6F1FB", text: "#0C447C", dot: "#378ADD" },
-  "Rejected": { bg: "#FCEBEB", text: "#791F1F", dot: "#E24B4A" },
-};
+export default function App() {
+  // Application Session States
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [candidates, setCandidates] = useState(INITIAL_CANDIDATES);
+  const [view, setView] = useState("admin"); // 'admin' | 'profile' | 'customer'
+  const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
+  
+  // Modals state
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [candidateToShare, setCandidateToShare] = useState<any>(null);
 
-const TECH_COLORS = {
-  "Frontend": { bg: "#EEEDFE", text: "#3C3489" },
-  "Backend": { bg: "#E1F5EE", text: "#0F6E56" },
-  "Full Stack": { bg: "#E6F1FB", text: "#0C447C" },
-  "DevOps": { bg: "#FAEEDA", text: "#633806" },
-  "Cloud": { bg: "#FAEEDA", text: "#633806" },
-  "Mobile": { bg: "#FBEAF0", text: "#72243E" },
-  "ML/AI": { bg: "#FAECE7", text: "#712B13" },
-  "Data": { bg: "#FAECE7", text: "#712B13" },
-};
-
-type AvatarProps = {
-  name: string;
-  size?: number;
-  fontSize?: number;
-};
-
-function Avatar({ name, size = 40, fontSize = 14 }: AvatarProps) {
-  const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-  const colors = [
-    { bg: "#EEEDFE", text: "#534AB7" },
-    { bg: "#E1F5EE", text: "#0F6E56" },
-    { bg: "#FAECE7", text: "#993C1D" },
-    { bg: "#E6F1FB", text: "#185FA5" },
-    { bg: "#FBEAF0", text: "#993556" },
-  ];
-  const color = colors[name.charCodeAt(0) % colors.length];
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: "50%",
-      background: color.bg, color: color.text,
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontWeight: 500, fontSize, flexShrink: 0, letterSpacing: "0.5px"
-    }}>{initials}</div>
-  );
-}
-
-function StatusBadge({ status }) {
-  const c = STATUS_COLORS[status] || STATUS_COLORS["New"];
-  return (
-    <span style={{
-      display: "inline-flex", alignItems: "center", gap: 5,
-      background: c.bg, color: c.text, borderRadius: 20,
-      padding: "3px 10px", fontSize: 12, fontWeight: 500
-    }}>
-      <span style={{ width: 6, height: 6, borderRadius: "50%", background: c.dot, flexShrink: 0 }} />
-      {status}
-    </span>
-  );
-}
-
-function SkillChip({ label, type = "skill" }) {
-  const col = type === "tech" ? (TECH_COLORS[label] || { bg: "#F1EFE8", text: "#444441" }) : { bg: "#F1EFE8", text: "#444441" };
-  return (
-    <span style={{
-      background: col.bg, color: col.text,
-      borderRadius: 6, padding: "3px 9px", fontSize: 12, fontWeight: 500
-    }}>{label}</span>
-  );
-}
-
-function StarRating({ rating }) {
-  return (
-    <span style={{ display: "inline-flex", gap: 2 }}>
-      {[1,2,3,4,5].map(i => (
-        <i key={i} className="ti ti-star" style={{
-          fontSize: 14,
-          color: i <= rating ? "#BA7517" : "var(--color-border-secondary)"
-        }} aria-hidden="true" />
-      ))}
-    </span>
-  );
-}
-
-function ScoreCircle({ score }) {
-  const color = score >= 85 ? "#1D9E75" : score >= 70 ? "#BA7517" : "#E24B4A";
-  return (
-    <div style={{
-      width: 52, height: 52, borderRadius: "50%",
-      border: `2px solid ${color}`,
-      display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center", flexShrink: 0
-    }}>
-      <span style={{ fontSize: 16, fontWeight: 500, color, lineHeight: 1 }}>{score}</span>
-      <span style={{ fontSize: 10, color: "var(--color-text-tertiary)" }}>/ 100</span>
-    </div>
-  );
-}
-
-function VideoPlayer({ url }) {
-  const videoRef = useRef(null);
-  const [playing, setPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-
-  const fmt = (s) => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,"0")}`;
-
-  const toggle = () => {
-    if (!videoRef.current) return;
-    if (playing) { videoRef.current.pause(); } else { videoRef.current.play(); }
-    setPlaying(!playing);
-  };
-
-  return (
-    <div style={{ borderRadius: "var(--border-radius-lg)", overflow: "hidden", border: "0.5px solid var(--color-border-tertiary)", background: "#000" }}>
-      <div style={{ position: "relative", background: "#111" }}>
-        <video
-          ref={videoRef}
-          src={url}
-          style={{ width: "100%", display: "block", maxHeight: 260, objectFit: "cover" }}
-          onTimeUpdate={e => { setCurrentTime(e.target.currentTime); setProgress((e.target.currentTime / e.target.duration) * 100 || 0); }}
-          onLoadedMetadata={e => setDuration(e.target.duration)}
-          onEnded={() => setPlaying(false)}
-        />
-        <div style={{
-          position: "absolute", inset: 0, display: "flex",
-          alignItems: "center", justifyContent: "center",
-          background: playing ? "transparent" : "rgba(0,0,0,0.35)",
-          transition: "background 0.2s", cursor: "pointer"
-        }} onClick={toggle}>
-          {!playing && (
-            <div style={{
-              width: 52, height: 52, borderRadius: "50%",
-              background: "rgba(255,255,255,0.9)",
-              display: "flex", alignItems: "center", justifyContent: "center"
-            }}>
-              <i className="ti ti-player-play" style={{ fontSize: 22, color: "#111", marginLeft: 3 }} />
-            </div>
-          )}
-        </div>
-      </div>
-      <div style={{ background: "var(--color-background-primary)", padding: "10px 14px", display: "flex", alignItems: "center", gap: 12 }}>
-        <button onClick={toggle} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: "var(--color-text-primary)" }}>
-          <i className={`ti ti-player-${playing ? "pause" : "play"}`} style={{ fontSize: 18 }} />
-        </button>
-        <div style={{ flex: 1, height: 4, background: "var(--color-border-tertiary)", borderRadius: 2, cursor: "pointer" }}
-          onClick={e => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const pct = (e.clientX - rect.left) / rect.width;
-            if (videoRef.current) { videoRef.current.currentTime = pct * duration; }
-          }}>
-          <div style={{ height: "100%", width: `${progress}%`, background: "#378ADD", borderRadius: 2, transition: "width 0.1s" }} />
-        </div>
-        <span style={{ fontSize: 12, color: "var(--color-text-secondary)", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
-          {fmt(currentTime)} / {fmt(duration)}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function ShareModal({ candidate, onClose }) {
-  const [copied, setCopied] = useState(false);
-  const link = `https://talent.yourcompany.com/shared/${candidate.id}-${Math.random().toString(36).slice(2,8)}`;
-
-  const copy = () => {
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <div style={{
-      position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)",
-      display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50,
-      padding: 24
-    }}>
-      <div style={{
-        background: "var(--color-background-primary)", borderRadius: "var(--border-radius-lg)",
-        border: "0.5px solid var(--color-border-tertiary)", padding: "24px",
-        width: "100%", maxWidth: 440
-      }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-          <div>
-            <p style={{ fontWeight: 500, fontSize: 15, margin: 0 }}>Share candidate profile</p>
-            <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "4px 0 0" }}>
-              Customer will only see {candidate.name}'s profile
-            </p>
-          </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-secondary)", padding: 4 }}>
-            <i className="ti ti-x" style={{ fontSize: 18 }} />
-          </button>
-        </div>
-
-        <div style={{ background: "var(--color-background-secondary)", borderRadius: "var(--border-radius-md)", padding: 12, marginBottom: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <Avatar name={candidate.name} size={36} fontSize={12} />
-            <div>
-              <p style={{ fontWeight: 500, fontSize: 14, margin: 0 }}>{candidate.name}</p>
-              <p style={{ fontSize: 12, color: "var(--color-text-secondary)", margin: 0 }}>{candidate.role}</p>
-            </div>
-            <div style={{ marginLeft: "auto" }}>
-              <StatusBadge status={candidate.status} />
-            </div>
-          </div>
-        </div>
-
-        <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "0 0 8px" }}>Share link</p>
-        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-          <input
-            readOnly
-            value={link}
-            style={{
-              flex: 1, fontSize: 12, padding: "8px 10px",
-              border: "0.5px solid var(--color-border-secondary)",
-              borderRadius: "var(--border-radius-md)",
-              background: "var(--color-background-secondary)",
-              color: "var(--color-text-secondary)", outline: "none"
-            }}
-          />
-          <button onClick={copy} style={{
-            padding: "8px 14px", borderRadius: "var(--border-radius-md)",
-            border: "0.5px solid var(--color-border-secondary)",
-            background: copied ? "var(--color-background-success)" : "var(--color-background-primary)",
-            color: copied ? "var(--color-text-success)" : "var(--color-text-primary)",
-            cursor: "pointer", fontSize: 13, fontWeight: 500, display: "flex", alignItems: "center", gap: 6,
-            transition: "all 0.2s"
-          }}>
-            <i className={`ti ti-${copied ? "check" : "copy"}`} style={{ fontSize: 14 }} />
-            {copied ? "Copied!" : "Copy"}
-          </button>
-        </div>
-
-        <div style={{
-          display: "flex", gap: 8, padding: "10px 12px",
-          background: "var(--color-background-info)",
-          borderRadius: "var(--border-radius-md)", alignItems: "flex-start"
-        }}>
-          <i className="ti ti-info-circle" style={{ fontSize: 15, color: "var(--color-text-info)", marginTop: 1, flexShrink: 0 }} />
-          <p style={{ fontSize: 12, color: "var(--color-text-info)", margin: 0, lineHeight: 1.5 }}>
-            This link gives access to only this candidate's profile. Admin controls and other candidates remain hidden.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function CandidateProfile({ candidate, onBack, isSharedView = false }) {
-  const [showShare, setShowShare] = useState(false);
-
-  return (
-    <div style={{ position: "relative", minHeight: 400 }}>
-      {showShare && <ShareModal candidate={candidate} onClose={() => setShowShare(false)} />}
-
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-        {!isSharedView && (
-          <button onClick={onBack} style={{
-            display: "flex", alignItems: "center", gap: 6,
-            background: "none", border: "0.5px solid var(--color-border-secondary)",
-            borderRadius: "var(--border-radius-md)", padding: "6px 12px",
-            cursor: "pointer", fontSize: 13, color: "var(--color-text-secondary)"
-          }}>
-            <i className="ti ti-arrow-left" style={{ fontSize: 14 }} /> Back
-          </button>
-        )}
-        <div style={{ flex: 1 }} />
-        {!isSharedView && (
-          <button onClick={() => setShowShare(true)} style={{
-            display: "flex", alignItems: "center", gap: 6,
-            background: "none", border: "0.5px solid var(--color-border-secondary)",
-            borderRadius: "var(--border-radius-md)", padding: "6px 14px",
-            cursor: "pointer", fontSize: 13, color: "var(--color-text-primary)", fontWeight: 500
-          }}>
-            <i className="ti ti-share" style={{ fontSize: 14 }} /> Share with client
-          </button>
-        )}
-        {isSharedView && (
-          <span style={{ fontSize: 12, color: "var(--color-text-tertiary)", display: "flex", alignItems: "center", gap: 5 }}>
-            <i className="ti ti-lock" style={{ fontSize: 13 }} /> Shared view
-          </span>
-        )}
-      </div>
-
-      <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 20 }}>
-        <div style={{
-          flex: "1 1 280px", background: "var(--color-background-primary)",
-          border: "0.5px solid var(--color-border-tertiary)",
-          borderRadius: "var(--border-radius-lg)", padding: "20px"
-        }}>
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 16 }}>
-            <Avatar name={candidate.name} size={52} fontSize={18} />
-            <div style={{ flex: 1 }}>
-              <p style={{ fontWeight: 500, fontSize: 18, margin: 0 }}>{candidate.name}</p>
-              <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "3px 0 8px" }}>{candidate.role}</p>
-              <StatusBadge status={candidate.status} />
-            </div>
-            <ScoreCircle score={candidate.overallScore} />
-          </div>
-
-          <div style={{ borderTop: "0.5px solid var(--color-border-tertiary)", paddingTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
-            {[
-              { icon: "ti-map-pin", label: candidate.location },
-              { icon: "ti-briefcase", label: `${candidate.experience} experience` },
-              { icon: "ti-calendar", label: `Applied ${candidate.appliedDate}` },
-              ...(!isSharedView ? [
-                { icon: "ti-mail", label: candidate.email },
-                { icon: "ti-phone", label: candidate.phone },
-              ] : [])
-            ].map(({ icon, label }) => (
-              <div key={label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <i className={`ti ${icon}`} style={{ fontSize: 14, color: "var(--color-text-tertiary)", width: 16 }} aria-hidden="true" />
-                <span style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>{label}</span>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ borderTop: "0.5px solid var(--color-border-tertiary)", paddingTop: 14, marginTop: 14 }}>
-            <p style={{ fontSize: 12, color: "var(--color-text-tertiary)", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "0.6px" }}>Tech domains</p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {candidate.techStack.map(t => <SkillChip key={t} label={t} type="tech" />)}
-            </div>
-          </div>
-
-          <div style={{ borderTop: "0.5px solid var(--color-border-tertiary)", paddingTop: 14, marginTop: 14 }}>
-            <p style={{ fontSize: 12, color: "var(--color-text-tertiary)", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "0.6px" }}>Key strengths</p>
-            {candidate.strengths.map(s => (
-              <div key={s} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-                <i className="ti ti-check" style={{ fontSize: 13, color: "#1D9E75" }} aria-hidden="true" />
-                <span style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>{s}</span>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ borderTop: "0.5px solid var(--color-border-tertiary)", paddingTop: 14, marginTop: 14 }}>
-            <a href={candidate.resumeUrl} style={{
-              display: "flex", alignItems: "center", gap: 8,
-              color: "var(--color-text-info)", fontSize: 13, textDecoration: "none", fontWeight: 500
-            }}>
-              <i className="ti ti-file-text" style={{ fontSize: 15 }} aria-hidden="true" />
-              View resume
-              <i className="ti ti-external-link" style={{ fontSize: 12, marginLeft: "auto" }} aria-hidden="true" />
-            </a>
-          </div>
-        </div>
-
-        <div style={{ flex: "2 1 340px", display: "flex", flexDirection: "column", gap: 14 }}>
-          <div style={{
-            background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)",
-            borderRadius: "var(--border-radius-lg)", padding: 20
-          }}>
-            <p style={{ fontSize: 13, color: "var(--color-text-tertiary)", margin: "0 0 12px", textTransform: "uppercase", letterSpacing: "0.6px" }}>Screening video</p>
-            <VideoPlayer url={candidate.videoUrl} />
-          </div>
-
-          <div style={{
-            background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)",
-            borderRadius: "var(--border-radius-lg)", padding: 20
-          }}>
-            <p style={{ fontSize: 13, color: "var(--color-text-tertiary)", margin: "0 0 14px", textTransform: "uppercase", letterSpacing: "0.6px" }}>Skill set</p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {candidate.skills.map(s => <SkillChip key={s} label={s} />)}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style={{
-        background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)",
-        borderRadius: "var(--border-radius-lg)", padding: 20
-      }}>
-        <p style={{ fontSize: 13, color: "var(--color-text-tertiary)", margin: "0 0 16px", textTransform: "uppercase", letterSpacing: "0.6px" }}>Interview answers</p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-          {candidate.summary.map((item, i) => (
-            <div key={i} style={{
-              paddingBottom: i < candidate.summary.length - 1 ? 16 : 0,
-              marginBottom: i < candidate.summary.length - 1 ? 16 : 0,
-              borderBottom: i < candidate.summary.length - 1 ? "0.5px solid var(--color-border-tertiary)" : "none"
-            }}>
-              <p style={{ fontWeight: 500, fontSize: 14, margin: "0 0 6px", color: "var(--color-text-primary)" }}>{item.q}</p>
-              <p style={{ fontSize: 14, color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.65 }}>{item.a}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AdminDashboard({ onSelectCandidate }) {
-  const [search, setSearch] = useState("");
+  // Filters state
+  const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [techFilter, setTechFilter] = useState("All");
 
-  const statuses = ["All", "New", "Under Review", "Shortlisted", "Rejected"];
-  const techs = ["All", "Frontend", "Backend", "Full Stack", "DevOps", "Cloud", "Mobile", "ML/AI"];
+  // Route URL queries watcher (simulates shared profile entry bypass)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const sharedId = params.get("shared");
+      if (sharedId) {
+        const found = candidates.find((c) => c.id === sharedId);
+        if (found) {
+          setSelectedCandidate(found);
+          setView("customer");
+        }
+      }
+    }
+  }, [candidates]);
 
-  const filtered = CANDIDATES.filter(c => {
-    const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.role.toLowerCase().includes(search.toLowerCase()) ||
-      c.skills.some(s => s.toLowerCase().includes(search.toLowerCase()));
-    const matchStatus = statusFilter === "All" || c.status === statusFilter;
-    const matchTech = techFilter === "All" || c.techStack.includes(techFilter);
-    return matchSearch && matchStatus && matchTech;
-  });
-
-  const counts = {
-    total: CANDIDATES.length,
-    shortlisted: CANDIDATES.filter(c => c.status === "Shortlisted").length,
-    reviewing: CANDIDATES.filter(c => c.status === "Under Review").length,
-    new: CANDIDATES.filter(c => c.status === "New").length,
+  // Sync state helpers
+  const handleUpdateCandidate = (updated: any) => {
+    setCandidates((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+    if (selectedCandidate && selectedCandidate.id === updated.id) {
+      setSelectedCandidate(updated);
+    }
   };
 
-  return (
-    <div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10, marginBottom: 20 }}>
-        {[
-          { label: "Total candidates", value: counts.total, icon: "ti-users" },
-          { label: "Shortlisted", value: counts.shortlisted, icon: "ti-star" },
-          { label: "Under review", value: counts.reviewing, icon: "ti-clock" },
-          { label: "New applications", value: counts.new, icon: "ti-bell" },
-        ].map(({ label, value, icon }) => (
-          <div key={label} style={{
-            background: "var(--color-background-secondary)",
-            borderRadius: "var(--border-radius-md)", padding: "14px 16px"
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-              <i className={`ti ${icon}`} style={{ fontSize: 14, color: "var(--color-text-tertiary)" }} aria-hidden="true" />
-              <span style={{ fontSize: 12, color: "var(--color-text-tertiary)" }}>{label}</span>
-            </div>
-            <p style={{ fontSize: 24, fontWeight: 500, margin: 0 }}>{value}</p>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
-        <div style={{ position: "relative", flex: "1 1 200px" }}>
-          <i className="ti ti-search" style={{
-            position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)",
-            fontSize: 15, color: "var(--color-text-tertiary)", pointerEvents: "none"
-          }} aria-hidden="true" />
-          <input
-            placeholder="Search by name, role, or skill..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            style={{ paddingLeft: 34, width: "100%", boxSizing: "border-box", fontSize: 13 }}
-          />
-        </div>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ fontSize: 13, minWidth: 130 }}>
-          {statuses.map(s => <option key={s}>{s}</option>)}
-        </select>
-        <select value={techFilter} onChange={e => setTechFilter(e.target.value)} style={{ fontSize: 13, minWidth: 130 }}>
-          {techs.map(t => <option key={t}>{t}</option>)}
-        </select>
-      </div>
-
-      <div style={{ fontSize: 12, color: "var(--color-text-tertiary)", marginBottom: 10 }}>
-        Showing {filtered.length} of {CANDIDATES.length} candidates
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {filtered.map(c => (
-          <div
-            key={c.id}
-            onClick={() => onSelectCandidate(c)}
-            style={{
-              background: "var(--color-background-primary)",
-              border: "0.5px solid var(--color-border-tertiary)",
-              borderRadius: "var(--border-radius-lg)", padding: "14px 16px",
-              cursor: "pointer", transition: "border-color 0.15s",
-              display: "flex", alignItems: "center", gap: 14
-            }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = "var(--color-border-secondary)"}
-            onMouseLeave={e => e.currentTarget.style.borderColor = "var(--color-border-tertiary)"}
-          >
-            <Avatar name={c.name} size={42} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <span style={{ fontWeight: 500, fontSize: 14 }}>{c.name}</span>
-                <StatusBadge status={c.status} />
-              </div>
-              <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "2px 0 6px" }}>
-                {c.role} · {c.experience} · {c.location}
-              </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                {c.techStack.map(t => <SkillChip key={t} label={t} type="tech" />)}
-                {c.skills.slice(0, 3).map(s => <SkillChip key={s} label={s} />)}
-                {c.skills.length > 3 && (
-                  <span style={{ fontSize: 12, color: "var(--color-text-tertiary)", padding: "3px 0" }}>+{c.skills.length - 3} more</span>
-                )}
-              </div>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, flexShrink: 0 }}>
-              <ScoreCircle score={c.overallScore} />
-              <StarRating rating={c.rating} />
-            </div>
-          </div>
-        ))}
-        {filtered.length === 0 && (
-          <div style={{ padding: "40px 0", textAlign: "center", color: "var(--color-text-tertiary)", fontSize: 14 }}>
-            No candidates match your filters
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function CustomerView({ candidate }) {
-  return (
-    <div>
-      <div style={{
-        marginBottom: 20, padding: "12px 16px",
-        background: "var(--color-background-info)",
-        borderRadius: "var(--border-radius-md)",
-        display: "flex", alignItems: "center", gap: 10
-      }}>
-        <i className="ti ti-shield-check" style={{ fontSize: 16, color: "var(--color-text-info)", flexShrink: 0 }} aria-hidden="true" />
-        <p style={{ fontSize: 13, color: "var(--color-text-info)", margin: 0 }}>
-          You're viewing a shared candidate profile. Contact the recruiter to discuss next steps.
-        </p>
-      </div>
-      <CandidateProfile candidate={candidate} onBack={() => {}} isSharedView={true} />
-    </div>
-  );
-}
-
-export default function App() {
-  const [view, setView] = useState("admin");
-  const [selectedCandidate, setSelectedCandidate] = useState(null);
-  const [sharedCandidate] = useState(CANDIDATES[1]);
-
-  const handleSelectCandidate = (c) => {
+  const handleSelectCandidate = (c: any) => {
     setSelectedCandidate(c);
     setView("profile");
   };
 
-  const handleBack = () => {
+  const handleBackToDashboard = () => {
     setView("admin");
     setSelectedCandidate(null);
   };
 
-  return (
-    <div style={{ minHeight: "100vh", background: "var(--color-background-tertiary)", fontFamily: "var(--font-sans)" }}>
-      <div style={{
-        background: "var(--color-background-primary)",
-        borderBottom: "0.5px solid var(--color-border-tertiary)",
-        padding: "0 24px",
-        display: "flex", alignItems: "center", gap: 0, height: 52
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginRight: 32 }}>
-          <div style={{
-            width: 26, height: 26, borderRadius: 6,
-            background: "#185FA5", display: "flex", alignItems: "center", justifyContent: "center"
-          }}>
-            <i className="ti ti-users" style={{ fontSize: 14, color: "#fff" }} aria-hidden="true" />
-          </div>
-          <span style={{ fontWeight: 500, fontSize: 14, color: "var(--color-text-primary)" }}>TalentDesk</span>
-        </div>
-        <div style={{ display: "flex", gap: 2, flex: 1 }}>
-          {[
-            { id: "admin", label: "Admin dashboard", icon: "ti-layout-dashboard" },
-            { id: "customer", label: "Customer view", icon: "ti-eye" },
-          ].map(tab => (
-            <button key={tab.id} onClick={() => { setView(tab.id); setSelectedCandidate(null); }} style={{
-              display: "flex", alignItems: "center", gap: 6,
-              background: "none", border: "none", cursor: "pointer",
-              padding: "6px 12px", borderRadius: "var(--border-radius-md)",
-              fontSize: 13, fontWeight: view.startsWith(tab.id) ? 500 : 400,
-              color: view.startsWith(tab.id) ? "var(--color-text-primary)" : "var(--color-text-secondary)",
-              borderBottom: view.startsWith(tab.id) || (tab.id === "admin" && view === "profile") ? "2px solid #185FA5" : "2px solid transparent",
-              borderRadius: 0, paddingTop: 4, paddingBottom: 4
-            }}>
-              <i className={`ti ${tab.icon}`} style={{ fontSize: 14 }} aria-hidden="true" />
-              {tab.label}
-            </button>
-          ))}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 12, color: "var(--color-text-tertiary)" }}>Admin</span>
-          <Avatar name="Admin User" size={28} fontSize={11} />
-        </div>
-      </div>
+  const handleTriggerShare = (c: any) => {
+    setCandidateToShare(c);
+    setShowShareModal(true);
+  };
 
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "24px 20px" }}>
-        {view === "admin" && (
-          <>
-            <div style={{ marginBottom: 20 }}>
-              <h1 style={{ fontSize: 20, fontWeight: 500, margin: "0 0 4px" }}>Screened candidates</h1>
-              <p style={{ fontSize: 14, color: "var(--color-text-secondary)", margin: 0 }}>Review and share candidate profiles with clients</p>
+  // Filtered Candidates logic
+  const filteredCandidates = candidates.filter((c) => {
+    const matchSearch =
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.skills.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    const matchStatus = statusFilter === "All" || c.status === statusFilter;
+    const matchTech = techFilter === "All" || c.techStack.includes(techFilter);
+
+    return matchSearch && matchStatus && matchTech;
+  });
+
+  const statusesList = ["All", "New", "Under Review", "Shortlisted", "Rejected"];
+  const techList = ["All", "Frontend", "Backend", "Full Stack", "DevOps", "Cloud", "Mobile", "ML/AI"];
+
+  // Customer Shared link bypass check
+  const isCustomerViewing = view === "customer" && selectedCandidate;
+
+  // Unauthenticated view
+  if (!isAuthenticated && !isCustomerViewing) {
+    return <Login onLoginSuccess={() => setIsAuthenticated(true)} />;
+  }
+
+  return (
+    <div className="min-h-screen flex bg-slate-50 dark:bg-[#090d16] text-slate-800 dark:text-slate-100">
+      
+      {/* Modals rendering */}
+      {showShareModal && candidateToShare && (
+        <ShareModal
+          candidate={candidateToShare}
+          onClose={() => {
+            setShowShareModal(false);
+            setCandidateToShare(null);
+          }}
+        />
+      )}
+
+      {/* Navigation Sidebar (Hidden in Customer Shared View) */}
+      {!isCustomerViewing && (
+        <Sidebar
+          activeView={view}
+          onViewChange={(v) => {
+            setView(v);
+            setSelectedCandidate(null);
+          }}
+          onLogout={() => {
+            setIsAuthenticated(false);
+            setView("admin");
+            setSelectedCandidate(null);
+          }}
+        />
+      )}
+
+      {/* Main Workspace Frame */}
+      <main className="flex-1 flex flex-col h-screen overflow-y-auto">
+        
+        {/* Top Header Navigation Glass Bar */}
+        <header className="h-16 px-6 glass-effect border-b border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between sticky top-0 z-10 shrink-0">
+          <div className="flex items-center gap-3">
+            {isCustomerViewing ? (
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-500 to-cyan-500 flex items-center justify-center text-white font-bold text-xs">
+                  T
+                </div>
+                <span className="font-bold text-sm text-slate-800 dark:text-white">TalentDesk Secure Share</span>
+              </div>
+            ) : (
+              <h2 className="text-sm font-bold text-slate-800 dark:text-white capitalize">
+                {view === "admin" ? "Recruiter Dashboard" : view === "profile" ? "Candidate Workspace" : "Recruitment Portal"}
+              </h2>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4 text-xs font-semibold text-slate-400">
+            {isCustomerViewing ? (
+              <span className="flex items-center gap-1.5 px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 rounded-full">
+                <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse" />
+                Reviewing Shared Link
+              </span>
+            ) : (
+              <div className="flex items-center gap-2.5">
+                <span className="w-2 h-2 bg-emerald-500 rounded-full" />
+                <span>Authorized Recruiter Session</span>
+              </div>
+            )}
+          </div>
+        </header>
+
+        {/* Dynamic Pages Area */}
+        <div className="flex-1 max-w-6xl w-full mx-auto p-6 space-y-6">
+          
+          {/* 1. Admin candidates list view */}
+          {view === "admin" && (
+            <>
+              {/* Introduction Title block */}
+              <div className="animate-fade-in">
+                <h1 className="text-2xl font-bold tracking-tight text-slate-800 dark:text-white flex items-center gap-2">
+                  Candidate Screening Board
+                  <Sparkles className="w-5 h-5 text-indigo-500" />
+                </h1>
+                <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
+                  Manage applications, screen introduction profiles, and securely share evaluations with clients.
+                </p>
+              </div>
+
+              {/* Recruitment statistics cards grid */}
+              <AnalyticsPanel candidates={candidates} />
+
+              {/* Filtering Controls */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-4 card-shadow flex flex-col md:flex-row gap-3 items-center justify-between animate-fade-in delay-75">
+                {/* Search bar */}
+                <div className="relative w-full md:w-96 shrink-0">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search by name, role, or skill tag..."
+                    className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800/60 rounded-xl text-xs text-slate-700 dark:text-slate-300 placeholder-slate-400 focus:outline-none"
+                  />
+                </div>
+
+                {/* Dropdowns filters row */}
+                <div className="flex flex-wrap gap-2.5 w-full md:w-auto items-center justify-end">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-400 font-semibold shrink-0">
+                    <SlidersHorizontal className="w-4 h-4 text-slate-400" />
+                    <span>Filters:</span>
+                  </div>
+
+                  {/* Status Dropdown */}
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="py-2 px-3 border border-slate-200 dark:border-slate-800/80 rounded-xl bg-slate-50 dark:bg-slate-950/40 text-xs font-semibold text-slate-600 dark:text-slate-300 focus:outline-none"
+                  >
+                    {statusesList.map((stat) => (
+                      <option key={stat} value={stat}>
+                        {stat === "All" ? "All Stages" : stat}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Domain dropdown */}
+                  <select
+                    value={techFilter}
+                    onChange={(e) => setTechFilter(e.target.value)}
+                    className="py-2 px-3 border border-slate-200 dark:border-slate-800/80 rounded-xl bg-slate-50 dark:bg-slate-950/40 text-xs font-semibold text-slate-600 dark:text-slate-300 focus:outline-none"
+                  >
+                    {techList.map((tech) => (
+                      <option key={tech} value={tech}>
+                        {tech === "All" ? "All Domains" : tech}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Candidates Grid lists */}
+              <div className="space-y-3 animate-fade-in delay-100">
+                <div className="flex justify-between items-center text-xs font-semibold text-slate-400 dark:text-slate-500 px-1">
+                  <span>Filtered Candidate Pool ({filteredCandidates.length})</span>
+                  <span>Sort: Best Match</span>
+                </div>
+
+                {filteredCandidates.map((cand) => (
+                  <CandidateCard
+                    key={cand.id}
+                    candidate={cand}
+                    onSelect={handleSelectCandidate}
+                  />
+                ))}
+
+                {filteredCandidates.length === 0 && (
+                  <div className="py-16 text-center border border-dashed border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 rounded-2xl p-8 card-shadow">
+                    <Users className="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-white">No Matching Candidates</h3>
+                    <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
+                      Adjust your search keyword or selection filters to find additional profiles.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* 2. Deep Dive Candidate profile details workspace */}
+          {view === "profile" && selectedCandidate && (
+            <CandidateDetails
+              candidate={selectedCandidate}
+              onBack={handleBackToDashboard}
+              onShareClick={() => handleTriggerShare(selectedCandidate)}
+              onUpdateCandidate={handleUpdateCandidate}
+            />
+          )}
+
+          {/* 3. Customer Shared candidate view */}
+          {view === "customer" && selectedCandidate && (
+            <div className="space-y-6">
+              {/* Informative Safety Banner for clients */}
+              <div className="flex gap-3.5 p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-950/30 rounded-2xl text-xs text-emerald-700 dark:text-emerald-300 animate-fade-in">
+                <div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20 shrink-0">
+                  <Award className="w-5 h-5 text-emerald-500" />
+                </div>
+                <div className="space-y-1 leading-relaxed">
+                  <span className="font-bold text-[13px] flex items-center gap-1">
+                    Screened Candidate Profile Available
+                  </span>
+                  <p className="text-slate-500 dark:text-slate-400 text-[11px]">
+                    You are reviewing an isolated candidate assessment package shared by your TalentDesk recruiter. Review their portfolio highlights, technical strengths, and introduction screening answers below.
+                  </p>
+                </div>
+              </div>
+
+              {/* Profile Details (Isolated view for client review) */}
+              <CandidateDetails
+                candidate={selectedCandidate}
+                onBack={() => {}}
+                isSharedView={true}
+              />
             </div>
-            <AdminDashboard onSelectCandidate={handleSelectCandidate} />
-          </>
-        )}
-        {view === "profile" && selectedCandidate && (
-          <>
-            <div style={{ marginBottom: 20 }}>
-              <h1 style={{ fontSize: 20, fontWeight: 500, margin: "0 0 4px" }}>{selectedCandidate.name}</h1>
-              <p style={{ fontSize: 14, color: "var(--color-text-secondary)", margin: 0 }}>{selectedCandidate.role}</p>
-            </div>
-            <CandidateProfile candidate={selectedCandidate} onBack={handleBack} />
-          </>
-        )}
-        {view === "customer" && (
-          <>
-            <div style={{ marginBottom: 20 }}>
-              <h1 style={{ fontSize: 20, fontWeight: 500, margin: "0 0 4px" }}>Candidate profile</h1>
-              <p style={{ fontSize: 14, color: "var(--color-text-secondary)", margin: 0 }}>Shared by your recruiter</p>
-            </div>
-            <CustomerView candidate={sharedCandidate} />
-          </>
-        )}
-      </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }
